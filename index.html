@@ -11,8 +11,181 @@
         <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet" type="text/css" />
         <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet" type="text/css" />
         <link href="css/styles.css" rel="stylesheet" />
+
+        <style>
+            /* ── Poster Cards ─────────────────────────────────────────── */
+            .poster-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 1.5rem;
+                margin-top: 1rem;
+            }
+
+            .poster-card {
+                position: relative;
+                border-radius: 10px;
+                overflow: hidden;
+                background: #f4f4f4;
+                box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+                cursor: pointer;
+                transition: transform 0.22s cubic-bezier(.22,.61,.36,1),
+                            box-shadow 0.22s cubic-bezier(.22,.61,.36,1);
+                text-decoration: none;
+                display: block;
+            }
+            .poster-card:hover {
+                transform: translateY(-6px) scale(1.02);
+                box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+            }
+
+            .poster-card__thumb {
+                width: 100%;
+                aspect-ratio: 3/4;
+                background: linear-gradient(135deg, #1a4a5e 0%, #0d8c7d 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 3.5rem;
+                color: rgba(255,255,255,0.55);
+                overflow: hidden;
+            }
+            .poster-card__thumb img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .poster-card__info {
+                padding: 0.75rem 1rem 1rem;
+                background: #fff;
+            }
+            .poster-card__title {
+                font-family: 'Saira Extra Condensed', sans-serif;
+                font-size: 1rem;
+                font-weight: 700;
+                color: #343a40;
+                margin-bottom: 0.2rem;
+                line-height: 1.25;
+            }
+            .poster-card__meta {
+                font-size: 0.78rem;
+                color: #868e96;
+            }
+
+            .poster-card__badge {
+                position: absolute;
+                top: 0.55rem;
+                right: 0.55rem;
+                background: #bd5d38;
+                color: #fff;
+                font-size: 0.65rem;
+                font-weight: 700;
+                padding: 0.2rem 0.5rem;
+                border-radius: 4px;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+
+            /* ── Full-screen PDF Viewer Overlay ──────────────────────── */
+            #poster-viewer-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: rgba(10, 20, 28, 0.97);
+                flex-direction: column;
+                animation: overlayIn 0.28s cubic-bezier(.22,.61,.36,1);
+            }
+            #poster-viewer-overlay.active {
+                display: flex;
+            }
+            @keyframes overlayIn {
+                from { opacity: 0; transform: scale(0.98); }
+                to   { opacity: 1; transform: scale(1); }
+            }
+
+            .viewer-topbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.75rem 1.25rem;
+                background: rgba(255,255,255,0.04);
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+                flex-shrink: 0;
+            }
+            .viewer-topbar__title {
+                font-family: 'Saira Extra Condensed', sans-serif;
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #fff;
+                letter-spacing: 0.03em;
+            }
+            .viewer-topbar__actions {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+            }
+
+            .viewer-btn {
+                background: rgba(255,255,255,0.10);
+                border: 1px solid rgba(255,255,255,0.18);
+                color: #fff;
+                border-radius: 6px;
+                padding: 0.42rem 0.9rem;
+                font-size: 0.82rem;
+                cursor: pointer;
+                transition: background 0.15s;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                text-decoration: none;
+            }
+            .viewer-btn:hover {
+                background: rgba(255,255,255,0.2);
+                color: #fff;
+            }
+            .viewer-btn--close {
+                background: rgba(189,93,56,0.25);
+                border-color: rgba(189,93,56,0.5);
+                padding: 0.42rem 0.7rem;
+            }
+            .viewer-btn--close:hover {
+                background: rgba(189,93,56,0.55);
+            }
+
+            .viewer-body {
+                flex: 1;
+                overflow: hidden;
+                display: flex;
+            }
+            .viewer-body iframe {
+                flex: 1;
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+
+            /* QR link notice */
+            .poster-qr-note {
+                font-size: 0.78rem;
+                color: #868e96;
+                margin-top: 0.35rem;
+                display: flex;
+                align-items: center;
+                gap: 0.35rem;
+            }
+
+            /* empty state */
+            .poster-empty {
+                color: #868e96;
+                font-style: italic;
+                margin-top: 0.5rem;
+            }
+        </style>
     </head>
     <body id="page-top">
+
+        <!-- ── Sidebar nav ────────────────────────────────────────────── -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
             <a class="navbar-brand js-scroll-trigger" href="#page-top">
                 <span class="d-block d-lg-none"></span>
@@ -25,26 +198,28 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#education">Education</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#projects">Projects</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#skills">Skills</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#posters">Posters</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#interests">Interests</a></li>
                 </ul>
             </div>
         </nav>
+
         <div class="container-fluid p-0">
-            <!-- About-->
+
+            <!-- About -->
             <section class="resume-section" id="about">
                 <div class="resume-section-content">
                     <h1 class="mb-0">
                         Fco Javier
                         <span class="text-primary">Suárez</span>
                     </h1>
-                                <div class="subheading mb-0">
-                Biologist, PhD Student @ 
-                <a href="http://ddlab.sci.univr.it/FunctionalGenomics/" target="_blank" rel="noopener noreferrer">
-                    Functional Genomics Lab
-                </a>, University of Verona
-                <a href="mailto:franciscojavier.suarezlopez@univr.it">franciscojavier.suarezlopez@univr.it</a>
-            </div>
-
+                    <div class="subheading mb-0">
+                        Biologist, PhD Student @
+                        <a href="http://ddlab.sci.univr.it/FunctionalGenomics/" target="_blank" rel="noopener noreferrer">
+                            Functional Genomics Lab
+                        </a>, University of Verona
+                        <a href="mailto:franciscojavier.suarezlopez@univr.it">franciscojavier.suarezlopez@univr.it</a>
+                    </div>
                     <h5 class="mb-5">
                         <span class="text-primary">Bio</span>informatics solutions for
                         <span class="text-primary">biological</span> problems
@@ -56,146 +231,134 @@
                 </div>
             </section>
             <hr class="m-0" />
-            <!-- Education-->
-<section class="resume-section" id="education">
-    <div class="resume-section-content">
-        <h2 class="mb-5">Education</h2>
 
-        <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-            <div class="flex-grow-1">
-                <h3 class="mb-0">Master's Degree in Genetics</h3>
-                <div class="subheading mb-3">University of Granada</div>
-                <p style="font-size: 0.9em; color: black; margin-top: -10px;">
-                    Master's Thesis: Study of the Autoimmune Nature of Extreme Patterns of Male Infertility Using Machine Learning Models and Their Potential Clinical Applications (9.4/10).
-                </p>
-            </div>
-            <div class="flex-shrink-0"><span class="text-primary">2024 - 2025</span></div>
-        </div>
+            <!-- Education -->
+            <section class="resume-section" id="education">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Education</h2>
 
-        <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-            <div class="flex-grow-1">
-                <h3 class="mb-0">Bachelor's Degree in Biology</h3>
-                <div class="subheading mb-3">University of Granada</div>
-                <p style="font-size: 0.9em; color: black; margin-top: -10px;">
-                    Bachelor's Thesis: Study of the Possible Autoimmune Nature of Non-Obstructive Azoospermia through Genetic Overlap Analysis with Immune-Mediated Diseases (10/10, with Honors).
-                </p>
-            </div>
-            <div class="flex-shrink-0"><span class="text-primary">2020 - 2024</span></div>
-        </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Master's Degree in Genetics</h3>
+                            <div class="subheading mb-3">University of Granada</div>
+                            <p style="font-size: 0.9em; color: black; margin-top: -10px;">
+                                Master's Thesis: Study of the Autoimmune Nature of Extreme Patterns of Male Infertility Using Machine Learning Models and Their Potential Clinical Applications (9.4/10).
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">2024 - 2025</span></div>
+                    </div>
 
-        <div class="d-flex flex-column">
-            <div class="mb-4">
-                <h4 class="mb-0">MOOC "Machine Learning and Big Data for Bioinformatics"</h4>
-                <div class="subheading mb-2">AbiertaUGR</div>
-                <p>100 hours</p>
-            </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">Bachelor's Degree in Biology</h3>
+                            <div class="subheading mb-3">University of Granada</div>
+                            <p style="font-size: 0.9em; color: black; margin-top: -10px;">
+                                Bachelor's Thesis: Study of the Possible Autoimmune Nature of Non-Obstructive Azoospermia through Genetic Overlap Analysis with Immune-Mediated Diseases (10/10, with Honors).
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">2020 - 2024</span></div>
+                    </div>
 
-            <div class="mb-4">
-                <h4 class="mb-0">Specialized Program in Machine Learning</h4>
-                <div class="subheading mb-2">Stanford University & DeepLearning.AI</div>
-                <ul>
-                    <li>Supervised Machine Learning: Regression and Classification (33 hours)</li>
-                    <li>Advanced Learning Algorithms (34 hours)</li>
-                </ul>
-                <p>Total: 67 hours</p>
-            </div>
-
-            <div class="mb-4">
-                <h4 class="mb-0">Genomics in Rare Diseases Course</h4>
-                <div class="subheading mb-2">Genotipia</div>
-                <p>25 hours</p>
-            </div>
-
-            <div class="mb-4">
-                <h4 class="mb-0">Panels, Exomes and Genomes in Clinical Practice Course</h4>
-                <div class="subheading mb-2">Genotipia</div>
-                <p>25 hours</p>
-            </div>
-
-            <div class="mb-4">
-                <h4 class="mb-0">Technical Innovation, Quality and Management in the Laboratory Course</h4>
-                <div class="subheading mb-2">Eventex</div>
-                <p>25 hours</p>
-            </div>
-
-            <div class="mb-4">
-                <h4 class="mb-0">Laboratory Risk Prevention Course</h4>
-                <div class="subheading mb-2">Eventex</div>
-                <p>25 hours</p>
-            </div>
-
-            <div class="mb-4">
-                <h4 class="mb-0">Professional Machine Learning with Scikit-Learn Course</h4>
-                <div class="subheading mb-2">Platzi</div>
-                <p>20 hours</p>
-            </div>
-
-            <div class="mb-4">
-                <h4 class="mb-0">Decision Trees and Random Forest with Python and Scikit-Learn Course</h4>
-                <div class="subheading mb-2">Platzi</div>
-                <p>12 hours</p>
-            </div>
-        </div>
-    </div>
-</section>
-
+                    <div class="d-flex flex-column">
+                        <div class="mb-4">
+                            <h4 class="mb-0">MOOC "Machine Learning and Big Data for Bioinformatics"</h4>
+                            <div class="subheading mb-2">AbiertaUGR</div>
+                            <p>100 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Specialized Program in Machine Learning</h4>
+                            <div class="subheading mb-2">Stanford University & DeepLearning.AI</div>
+                            <ul>
+                                <li>Supervised Machine Learning: Regression and Classification (33 hours)</li>
+                                <li>Advanced Learning Algorithms (34 hours)</li>
+                            </ul>
+                            <p>Total: 67 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Genomics in Rare Diseases Course</h4>
+                            <div class="subheading mb-2">Genotipia</div>
+                            <p>25 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Panels, Exomes and Genomes in Clinical Practice Course</h4>
+                            <div class="subheading mb-2">Genotipia</div>
+                            <p>25 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Technical Innovation, Quality and Management in the Laboratory Course</h4>
+                            <div class="subheading mb-2">Eventex</div>
+                            <p>25 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Laboratory Risk Prevention Course</h4>
+                            <div class="subheading mb-2">Eventex</div>
+                            <p>25 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Professional Machine Learning with Scikit-Learn Course</h4>
+                            <div class="subheading mb-2">Platzi</div>
+                            <p>20 hours</p>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="mb-0">Decision Trees and Random Forest with Python and Scikit-Learn Course</h4>
+                            <div class="subheading mb-2">Platzi</div>
+                            <p>12 hours</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
             <hr class="m-0" />
-            <!-- Projects-->
-<section class="resume-section" id="projects">
-    <div class="resume-section-content">
-        <h2 class="mb-5">Projects</h2>
-        
-        <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-            <div class="flex-grow-1">
 
-                <div class="mb-4">
-                    <h3 class="mb-1">Sumstat_Converter</h3>
-                    <div class="subheading mb-2">
-                        R script to convert harmonized GWAS summary statistics into .assoc.logistic structure to be usable in PRS
+            <!-- Projects -->
+            <section class="resume-section" id="projects">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Projects</h2>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <div class="mb-4">
+                                <h3 class="mb-1">Sumstat_Converter</h3>
+                                <div class="subheading mb-2">
+                                    R script to convert harmonized GWAS summary statistics into .assoc.logistic structure to be usable in PRS
+                                </div>
+                                <p>This script was developed during my Bachelor's Thesis, being its key element, and allowed me to achieve a grade of 10 with honors.</p>
+                                <a href="https://github.com/fjaviersuarez/Sumstat_Converter" target="_blank">
+                                    https://github.com/fjaviersuarez/Sumstat_Converter
+                                </a>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="mb-1">SNPMatch</h3>
+                                <div class="subheading mb-2">
+                                    R script to merge .snp files and summary statistics after a PRS to obtain a file with the LeadSNPs and their rsID
+                                </div>
+                                <a href="https://github.com/fjaviersuarez/SNPMatch" target="_blank">
+                                    https://github.com/fjaviersuarez/SNPMatch
+                                </a>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="mb-1">EasyBLAT</h3>
+                                <div class="subheading mb-2">
+                                    This program cuts a .fasta file at the start and end for BLAT alignment
+                                </div>
+                                <a href="https://github.com/fjaviersuarez/EasyBLAT" target="_blank">
+                                    https://github.com/fjaviersuarez/EasyBLAT
+                                </a>
+                            </div>
+                            <div class="mb-4">
+                                <h3 class="mb-1">Small World Initiative, Teacher Assistant Senior</h3>
+                                <div class="subheading mb-2">
+                                    SWI is a citizen science initiative in which university students conduct workshops in high schools to raise awareness about the risks of antibiotic resistance. As part of a global sampling project, we aim to discover new bacterial strains capable of synthesizing novel antibiotics, while also inspiring students' interest in science.
+                                </div>
+                                <div class="text-center">
+                                    <img src="assets/img/SWI.jpg" alt="SWI Workshop" class="img-fluid" style="max-width: 400px; margin-top: 15px;">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p>This script was developed during my Bachelor's Thesis, being its key element, and allowed me to achieve a grade of 10 with honors.</p>
-                    <a href="https://github.com/fjaviersuarez/Sumstat_Converter" target="_blank">
-                        https://github.com/fjaviersuarez/Sumstat_Converter
-                    </a>
                 </div>
-
-                <div class="mb-4">
-                    <h3 class="mb-1">SNPMatch</h3>
-                    <div class="subheading mb-2">
-                        R script to merge .snp files and summary statistics after a PRS to obtain a file with the LeadSNPs and their rsID
-                    </div>
-                    <a href="https://github.com/fjaviersuarez/SNPMatch" target="_blank">
-                        https://github.com/fjaviersuarez/SNPMatch
-                    </a>
-                </div>
-
-                <div class="mb-4">
-                    <h3 class="mb-1">EasyBLAT</h3>
-                    <div class="subheading mb-2">
-                        This program cuts a .fasta file at the start and end for BLAT alignment
-                    </div>
-                    <a href="https://github.com/fjaviersuarez/EasyBLAT" target="_blank">
-                        https://github.com/fjaviersuarez/EasyBLAT
-                    </a>
-                </div>
-
-                <div class="mb-4">
-                    <h3 class="mb-1">Small World Initiative, Teacher Assistant Senior</h3>
-                    <div class="subheading mb-2">
-                        SWI is a citizen science initiative in which university students conduct workshops in high schools to raise awareness about the risks of antibiotic resistance. As part of a global sampling project, we aim to discover new bacterial strains capable of synthesizing novel antibiotics, while also inspiring students' interest in science.
-                    </div>
-                    <div class="text-center">
-                        <img src="assets/img/SWI.jpg" alt="SWI Workshop" class="img-fluid" style="max-width: 400px; margin-top: 15px;">
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</section>
-
+            </section>
             <hr class="m-0" />
-            <!-- Skills-->
+
+            <!-- Skills -->
             <section class="resume-section" id="skills">
                 <div class="resume-section-content">
                     <h2 class="mb-5">Skills</h2>
@@ -205,7 +368,6 @@
                         <li class="list-inline-item"><i class="fab fa-r-project"></i></li>
                         <i class="fas fa-terminal"></i>
                     </ul>
-                    
                     <div class="subheading mb-3">Software & Tools</div>
                     <p>> Unix Terminal</p>
                     <p>> PLINK</p>
@@ -214,13 +376,29 @@
                     <p>> Galaxy (basic proficiency)</p>
                     <p>> Scikit-Learn</p>
                     <p>> TensorFlow</p>
-
-
                 </div>
             </section>
-            
             <hr class="m-0" />
-            <!-- Interests-->
+
+            <!-- ── POSTERS ──────────────────────────────────────────────── -->
+            <section class="resume-section" id="posters">
+                <div class="resume-section-content">
+                    <h2 class="mb-2">Posters</h2>
+                    <p class="mb-4" style="color:#495057;">
+                        Scientific posters presented at conferences and symposia.
+                        Each poster opens as a full PDF — QR codes on printed copies link directly to each one.
+                    </p>
+
+
+
+                    <div class="poster-grid" id="poster-grid">
+                        <!-- Cards are injected by the script below -->
+                    </div>
+                </div>
+            </section>
+            <hr class="m-0" />
+
+            <!-- Interests -->
             <section class="resume-section" id="interests">
                 <div class="resume-section-content">
                     <h2 class="mb-5">Interests</h2>
@@ -228,9 +406,149 @@
                 </div>
             </section>
             <hr class="m-0" />
-            
+
+        </div><!-- /container-fluid -->
+
+        <!-- ── Full-screen PDF Viewer Overlay ─────────────────────────── -->
+        <div id="poster-viewer-overlay" role="dialog" aria-modal="true" aria-label="Poster viewer">
+            <div class="viewer-topbar">
+                <span class="viewer-topbar__title" id="viewer-title"></span>
+                <div class="viewer-topbar__actions">
+                    <a id="viewer-download-btn" class="viewer-btn" href="#" download aria-label="Download PDF">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a id="viewer-link-btn" class="viewer-btn" href="#" target="_blank" rel="noopener" aria-label="Open in new tab">
+                        <i class="fas fa-external-link-alt"></i> Open in new tab
+                    </a>
+                    <button class="viewer-btn viewer-btn--close" id="viewer-close-btn" aria-label="Close viewer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="viewer-body">
+                <iframe id="viewer-iframe" title="Poster PDF viewer" allowfullscreen></iframe>
+            </div>
         </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="js/scripts.js"></script>
+
+        <script>
+
+const POSTERS = [
+    {
+        id:    "BITS-2026",         
+        title: "Validation of novel CNBP repeat features in Myotonic Dystrophy Type 2 through comparative long-read sequencing with Oxford Nanopore and PacBio",
+        event: "BITS - Società Italiana di Bioinformatica",
+        year:  "2026",
+        pdf:   "assets/posters/BITS_Poster_draft.pdf",
+        thumb: ""   
+    },
+];
+
+
+        const grid = document.getElementById("poster-grid");
+
+        if (POSTERS.length === 0) {
+            grid.innerHTML = '<p class="poster-empty">No posters yet — check back soon.</p>';
+        } else {
+            POSTERS.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "poster-card";
+                card.setAttribute("role", "button");
+                card.setAttribute("tabindex", "0");
+                card.setAttribute("aria-label", "Open poster: " + p.title);
+                card.dataset.id = p.id;
+
+                card.innerHTML = `
+                    <div class="poster-card__thumb">
+                        ${p.thumb
+                            ? `<img src="${p.thumb}" alt="${p.title} thumbnail" loading="lazy">`
+                            : `<i class="fas fa-file-pdf"></i>`}
+                    </div>
+                    <span class="poster-card__badge">PDF</span>
+                    <div class="poster-card__info">
+                        <div class="poster-card__title">${p.title}</div>
+                        <div class="poster-card__meta">${p.event} &middot; ${p.year}</div>
+                        <div class="poster-qr-note">
+                            <i class="fas fa-qrcode" style="font-size:0.8em;"></i>
+                            <span>QR-accessible</span>
+                        </div>
+                    </div>`;
+
+                card.addEventListener("click", () => openPoster(p.id));
+                card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") openPoster(p.id); });
+                grid.appendChild(card);
+            });
+        }
+
+
+        const overlay   = document.getElementById("poster-viewer-overlay");
+        const iframe    = document.getElementById("viewer-iframe");
+        const titleEl   = document.getElementById("viewer-title");
+        const dlBtn     = document.getElementById("viewer-download-btn");
+        const linkBtn   = document.getElementById("viewer-link-btn");
+        const closeBtn  = document.getElementById("viewer-close-btn");
+
+        function openPoster(id) {
+            const poster = POSTERS.find(p => p.id === id);
+            if (!poster) return;
+
+            titleEl.textContent = poster.title;
+            iframe.src          = poster.pdf;
+            dlBtn.href          = poster.pdf;
+            linkBtn.href        = poster.pdf;
+
+            overlay.classList.add("active");
+            document.body.style.overflow = "hidden";
+
+
+            const url = new URL(window.location.href);
+            url.searchParams.set("poster", id);
+            history.pushState({ poster: id }, "", url.toString());
+        }
+
+        function closePoster() {
+            overlay.classList.remove("active");
+            iframe.src = "";
+            document.body.style.overflow = "";
+
+            const url = new URL(window.location.href);
+            url.searchParams.delete("poster");
+            history.pushState({}, "", url.toString());
+        }
+
+        closeBtn.addEventListener("click", closePoster);
+
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape" && overlay.classList.contains("active")) closePoster();
+        });
+
+
+        overlay.addEventListener("click", e => {
+            if (e.target === overlay) closePoster();
+        });
+
+
+        window.addEventListener("popstate", e => {
+            if (overlay.classList.contains("active")) {
+                overlay.classList.remove("active");
+                iframe.src = "";
+                document.body.style.overflow = "";
+            }
+        });
+
+
+        (function checkURLOnLoad() {
+            const params  = new URLSearchParams(window.location.search);
+            const posterId = params.get("poster");
+            if (posterId) {
+
+                setTimeout(() => openPoster(posterId), 200);
+            }
+        })();
+        </script>
+
     </body>
 </html>
